@@ -15,7 +15,7 @@ import java.util.List;
 @ApplicationScoped
 public class DatabaseResource {
 
-	@PersistenceContext
+	@PersistenceContext(name="patatas")
 	private EntityManager entityManager;
 
 	@Transactional

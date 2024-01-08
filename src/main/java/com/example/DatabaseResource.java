@@ -1,7 +1,7 @@
 package com.example;
 
 import com.example.model.Cat;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -12,10 +12,10 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 
-@ApplicationScoped
+@Singleton
 public class DatabaseResource {
 
-	@PersistenceContext(name="patatas")
+	@PersistenceContext
 	private EntityManager entityManager;
 
 	@Transactional
@@ -24,7 +24,7 @@ public class DatabaseResource {
 		cat.setName(name);
 		entityManager.persist(cat);
 	}
-
+	@Transactional
 	public List<Cat> getAllCats() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Cat> cq = cb.createQuery(Cat.class);

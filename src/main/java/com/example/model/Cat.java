@@ -1,18 +1,24 @@
 package com.example.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.validation.constraints.NotNull;
+
+import java.io.Serializable;
 
 @Entity
-public class Cat {
+public class Cat implements Serializable {
+
+	@NotNull
+	@Column(name = "name", nullable = false)
 	private String name;
-	private Long id;
 
 	@Id
-	@SequenceGenerator(name = "catSeq", sequenceName = "cat_id_seq", allocationSize = 1, initialValue = 1)
-	@GeneratedValue(generator = "catSeq")
+	@GeneratedValue
+	private Long id;
+
 	public Long getId() {
 		return id;
 	}

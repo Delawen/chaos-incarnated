@@ -18,7 +18,7 @@ public class PersistenceService {
 	@Inject
 	DatabaseResource databaseResource;
 
-	@POST
+	@GET
 	@Path("/cat/{name}")
 	@Produces(MediaType.TEXT_PLAIN)
 	@Transactional
@@ -27,9 +27,19 @@ public class PersistenceService {
 		return "Cat added with name " + name;
 	}
 
+	@POST
+	@Path("/cat/{name}")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Transactional
+	public String addCatPost(@PathParam("name") String name) {
+		databaseResource.addCat(name);
+		return "Cat added with name " + name;
+	}
+
 	@GET
 	@Path("/cats")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Transactional
 	public List<Cat> getCats() {
 		return databaseResource.getAllCats();
 	}

@@ -16,24 +16,6 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.eclipse.microprofile</groupId>
-            <artifactId>microprofile</artifactId>
-            <version>6.0</version>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-        <!-- Persistence -->
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>3.2.0-M1</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
@@ -41,12 +23,14 @@
     </dependencies>
 
     <!-- Oh, micronaut, let me have a different parent! -->
-<!--    <parent>-->
-<!--        <groupId>io.micronaut.platform</groupId>-->
-<!--        <artifactId>micronaut-parent</artifactId>-->
-<!--        <version>4.2.2</version>-->
-<!--    </parent>-->
-    <!-- Oh, this trashy parent -->
+    <!--
+    <parent>
+        <groupId>io.micronaut.platform</groupId>
+        <artifactId>micronaut-parent</artifactId>
+        <version>4.2.3</version>
+    </parent>
+    -->
+    <!-- Oh, this micronaut parent -->
 
     <build>
         <plugins>
@@ -104,6 +88,10 @@
                 </dependency>
                 <dependency>
                     <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-hibernate-validator</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>io.quarkus</groupId>
                     <artifactId>quarkus-jdbc-h2</artifactId>
                 </dependency>
             </dependencies>
@@ -136,13 +124,9 @@
                 <packaging>jar</packaging>
                 <jdk.version>17</jdk.version>
                 <release.version>17</release.version>
-                <micronaut.version>4.2.2</micronaut.version>
-                <micronaut.core.version>4.2.2</micronaut.core.version>
-                <micronaut.serialization.version>2.4.0</micronaut.serialization.version>
+                <micronaut.version>4.2.3</micronaut.version>
                 <micronaut.runtime>netty</micronaut.runtime>
                 <micronaut.aot.enabled>false</micronaut.aot.enabled>
-                <micronaut-maven-plugin.version>4.0.7</micronaut-maven-plugin.version>
-                <micronaut.testresources.version>2.2.0</micronaut.testresources.version>
                 <micronaut.aot.packageName>com.example.aot.generated</micronaut.aot.packageName>
                 <exec.mainClass>com.example.MicronautApplication</exec.mainClass>
             </properties>
@@ -150,7 +134,6 @@
                 <dependency>
                     <groupId>io.micronaut.jaxrs</groupId>
                     <artifactId>micronaut-jaxrs-server</artifactId>
-                    <version>4.2.0</version>
                 </dependency>
                 <dependency>
                     <groupId>io.micronaut</groupId>
@@ -167,6 +150,41 @@
                     <artifactId>logback-classic</artifactId>
                     <scope>runtime</scope>
                 </dependency>
+
+                <!-- Persistence -->
+
+                <dependency>
+                    <groupId>io.micronaut.data</groupId>
+                    <artifactId>micronaut-data-hibernate-jpa</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.micronaut.data</groupId>
+                    <artifactId>micronaut-data-tx-hibernate</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.micronaut.sql</groupId>
+                    <artifactId>micronaut-hibernate-jpa</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+
+                <!-- hikari is the JDBC dependency I saw more on examples, so let's go -->
+                <dependency>
+                    <groupId>io.micronaut.sql</groupId>
+                    <artifactId>micronaut-jdbc-hikari</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.micronaut.validation</groupId>
+                    <artifactId>micronaut-validation</artifactId>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>jakarta.validation</groupId>
+                    <artifactId>jakarta.validation-api</artifactId>
+                    <scope>compile</scope>
+                </dependency>
             </dependencies>
             <build>
                 <plugins>
@@ -174,20 +192,53 @@
                         <groupId>io.micronaut.maven</groupId>
                         <artifactId>micronaut-maven-plugin</artifactId>
                         <configuration>
-                            <testResourcesVersion>4.2.2</testResourcesVersion>
                             <configFile>aot-${project.packaging}.properties</configFile>
                         </configuration>
                     </plugin>
                     <plugin>
+                        <groupId>com.diffplug.spotless</groupId>
+                        <artifactId>spotless-maven-plugin</artifactId>
+                        <version>2.41.1</version>
+                        <configuration>
+                            <java>
+                                <licenseHeader>
+                                    <file>${project.basedir}/LICENSEHEADER</file>
+                                </licenseHeader>
+                            </java>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${compiler-plugin.version}</version>
                         <configuration>
-                            <annotationProcessorPaths combine.children="append">
+                            <!-- Uncomment to enable incremental compilation -->
+                            <!-- <useIncrementalCompilation>false</useIncrementalCompilation> -->
+
+                            <annotationProcessorPaths combine.self="override">
                                 <path>
-                                    <groupId>io.micronaut.jaxrs</groupId>
-                                    <artifactId>micronaut-jaxrs-processor</artifactId>
-                                    <version>4.2.0</version>
+                                    <groupId>io.micronaut</groupId>
+                                    <artifactId>micronaut-inject-java</artifactId>
+                                    <version>${micronaut.core.version}</version>
+                                </path>
+                                <path>
+                                    <groupId>io.micronaut.data</groupId>
+                                    <artifactId>micronaut-data-processor</artifactId>
+                                    <version>${micronaut.data.version}</version>
+                                    <exclusions>
+                                        <exclusion>
+                                            <groupId>io.micronaut</groupId>
+                                            <artifactId>micronaut-inject</artifactId>
+                                        </exclusion>
+                                    </exclusions>
+                                </path>
+                                <path>
+                                    <groupId>io.micronaut</groupId>
+                                    <artifactId>micronaut-graal</artifactId>
+                                    <version>${micronaut.core.version}</version>
                                 </path>
                                 <path>
                                     <groupId>io.micronaut</groupId>
@@ -205,9 +256,26 @@
                                         </exclusion>
                                     </exclusions>
                                 </path>
+                                <path>
+                                    <groupId>io.micronaut.validation</groupId>
+                                    <artifactId>micronaut-validation-processor</artifactId>
+                                    <version>${micronaut.validation.version}</version>
+                                    <exclusions>
+                                        <exclusion>
+                                            <groupId>io.micronaut</groupId>
+                                            <artifactId>micronaut-inject</artifactId>
+                                        </exclusion>
+                                    </exclusions>
+                                </path>
+                                <path>
+                                    <groupId>io.micronaut.jaxrs</groupId>
+                                    <artifactId>micronaut-jaxrs-processor</artifactId>
+                                    <version>4.2.0</version>
+                                </path>
                             </annotationProcessorPaths>
                             <compilerArgs>
                                 <arg>-Amicronaut.processing.group=com.example</arg>
+                                <arg>-Amicronaut.processing.module=default</arg>
                             </compilerArgs>
                         </configuration>
                     </plugin>
@@ -237,7 +305,6 @@
 
         <profile>
             <id>spring</id>
-            <activation><activeByDefault>true</activeByDefault></activation>
             <dependencyManagement>
                 <dependencies>
                     <dependency>

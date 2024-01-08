@@ -1,7 +1,7 @@
 package com.example;
 
 import com.example.model.Cat;
-import jakarta.inject.Singleton;
+import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -12,11 +12,12 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 
-@Singleton
+// Spring doesn't like singletones @Singleton
+@Named("dbResource")
 public class DatabaseResource {
 
 	@PersistenceContext
-	private EntityManager entityManager;
+	EntityManager entityManager;
 
 	@Transactional
 	public void addCat(String name) {
